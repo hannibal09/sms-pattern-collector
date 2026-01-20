@@ -21,7 +21,7 @@ export function deduplicate(messages, maxPerCategory = 5) {
         // Also prioritize messages that successfully triggered rules (more PII = better test case)
 
         group.sort((a, b) => {
-            const lenScore = b.originalBody.length - a.originalBody.length;
+            const lenScore = (b.body || '').length - (a.body || '').length;
             return lenScore;
         });
 
