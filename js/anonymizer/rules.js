@@ -11,26 +11,34 @@ export const ANONYMIZATION_RULES = [
             const digits = group.match(/\d+/);
             if (!digits) return match.replace(group, 'XX8888');
 
-            // Replace digits with deterministic but fake digits based on length
-            const fakeDigits = '8'.repeat(digits[0].length);
-            return match.replace(digits[0], fakeDigits);
+            // Generate random 4-digit number to replace real digits
+            // Keeps the same string length if possible or just standard 4
+            const randomDigits = Math.floor(1000 + Math.random() * 9000).toString();
+            return match.replace(digits[0], randomDigits);
         }
     },
 
     {
         name: 'Amount',
         // Matches: Rs. 1,234.50, INR 500, etc.
-        // Be careful not to match dates or other numbers
         pattern: /(?:Rs\.?|INR|₹)\s*[\d,]+\.?\d*/gi,
         replace: (match) => {
-            // Simple randomization that preserves magnitude roughly
-            const numStr = match.replace(/[^\d.]/g, '');
+            // Remove commas to parse correctly
+            const numStr = match.replace(/,/g, '').replace(/[^\d.]/g, '');
             const val = parseFloat(numStr);
             if (isNaN(val)) return match;
 
-            // Generate a new amount with same number of digits roughly
-            const mult = Math.pow(10, Math.floor(Math.log10(val || 1)));
-            const newVal = (Math.random() * mult * 9).toFixed(2);
+            // Generate amount within +/- 20% of original to keep magnitude realistic
+            // e.g. 100 -> 80 to 120
+            const randomFactor = 0.8 + Math.random() * 0.4;
+            let newVal = (val * randomFactor).toFixed(2);
+
+            // Format with commas for Indian locale if original had them
+            if (match.includes(',')) {
+                const parts = newVal.split('.');
+                parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
+                newVal = parts.join('.');
+            }
 
             // Preserve original currency symbol
             const symbol = match.match(/Rs\.?|INR|₹/i)?.[0] || 'Rs.';
@@ -44,7 +52,7 @@ export const ANONYMIZATION_RULES = [
         pattern: /\b[a-zA-Z0-9._-]+@[a-zA-Z]{3,}\b/gi,
         replace: (match) => {
             const [user, bank] = match.split('@');
-            // Keep bank part, mask user part
+            // Keep bank part, mask user part with realistic char count
             const maskedUser = user.substring(0, 1) + '***' + user.substring(user.length - 1);
             return `${maskedUser}@${bank}`;
         }
@@ -55,7 +63,9 @@ export const ANONYMIZATION_RULES = [
         // Matches: Card ending 1234, Card XX1234
         pattern: /(?:card|Card)\s*(?:no\.?|number|ending|ending with)?\s*[:.-]?\s*(?:[xX*]*\s*)(\d{4})\b/gi,
         replace: (match, digits) => {
-            return match.replace(digits, 'XXXX');
+            // Replace with random 4 digits instead of XXXX to simulate real card number
+            const randomCard = Math.floor(1000 + Math.random() * 9000).toString();
+            return match.replace(digits, randomCard);
         }
     },
 
