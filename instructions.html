@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Instructions - SMS Pattern Collector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+</head>
+
+<body class="bg-slate-50 text-slate-800 min-h-screen p-8">
+    <div class="max-w-3xl mx-auto bg-white p-10 rounded-xl shadow-md">
+        <a href="index.html" class="text-indigo-600 hover:text-indigo-800 font-medium mb-6 inline-block">&larr; Back to
+            Tool</a>
+
+        <h1 class="text-3xl font-bold mb-6">How to Contribute</h1>
+
+        <div class="space-y-8">
+            <section>
+                <h2 class="text-xl font-semibold mb-3 border-b pb-2">Step 1: Get SMS Backup</h2>
+                <p class="mb-4">We recommend using the popular <strong>SMS Backup & Restore</strong> app on Android.</p>
+                <ol class="list-decimal ml-6 space-y-2 text-slate-700">
+                    <li>Install <a href="#" class="text-blue-600 underline">SMS Backup & Restore</a> from Play Store.
+                    </li>
+                    <li>Open app and tap <strong>Set up a backup</strong>.</li>
+                    <li>Select <strong>Messages</strong> only.</li>
+                    <li>Important: You can tap "Advanced Options" to select only specific conversations if you prefer,
+                        but our tool filters them anyway.</li>
+                    <li>Choose <strong>Local Backup</strong> (store on phone).</li>
+                    <li>Run the backup. It will create an `.xml` file.</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold mb-3 border-b pb-2">Step 2: Clean & Anonymize</h2>
+                <ol class="list-decimal ml-6 space-y-2 text-slate-700">
+                    <li>Transfer the XML file to your computer (or open this site on mobile).</li>
+                    <li>Drag and drop the file into the <strong>main page</strong>.</li>
+                    <li>Wait for processing to complete.</li>
+                </ol>
+            </section>
+
+            <section>
+                <h2 class="text-xl font-semibold mb-3 border-b pb-2">Step 3: Review & Share</h2>
+                <ol class="list-decimal ml-6 space-y-2 text-slate-700">
+                    <li>Scroll through the <strong>Preview</strong> section.</li>
+                    <li>We show you exactly what changed. <span
+                            class="bg-emerald-100 text-emerald-800 px-1 rounded">Green</span> text is the anonymized
+                        version we keep.</li>
+                    <li>If you see any message you don't like, click the <span class="text-red-500">Trash Icon</span> to
+                        remove it.</li>
+                    <li>Click <strong>Download JSON</strong>.</li>
+                    <li>Email or share the JSON file with the developer.</li>
+                </ol>
+            </section>
+        </div>
+    </div>
+</body>
+
+</html>

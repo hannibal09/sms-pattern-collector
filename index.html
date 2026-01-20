@@ -1,0 +1,133 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>SMS Pattern Collector</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link rel="stylesheet" href="css/styles.css">
+</head>
+
+<body class="bg-slate-50 text-slate-900 min-h-screen">
+    <div class="container mx-auto px-4 py-8 max-w-5xl">
+        <!-- Header -->
+        <header class="mb-10 text-center">
+            <h1 class="text-4xl font-bold mb-3 text-indigo-600">SMS Pattern Collector</h1>
+            <p class="text-lg text-slate-600 max-w-2xl mx-auto">
+                Help improve open source parsers by contributing anonymized SMS samples.
+                <br>
+                <span class="font-semibold text-emerald-600">🔒 Privacy First:</span> Your data is processed entirely in
+                your browser and never uploaded until you approve the anonymized version.
+            </p>
+        </header>
+
+        <!-- Main Content -->
+        <main class="space-y-8">
+            <!-- Step 1: Upload -->
+            <section id="upload-section" class="bg-white rounded-xl shadow-md p-8 transition-all hover:shadow-lg">
+                <h2 class="text-2xl font-semibold mb-4 flex items-center">
+                    <span
+                        class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">1</span>
+                    Upload SMS Backup
+                </h2>
+
+                <div id="dropzone"
+                    class="border-2 border-dashed border-slate-300 rounded-lg p-10 text-center cursor-pointer hover:border-indigo-500 hover:bg-slate-50 transition-colors">
+                    <div class="mb-4">
+                        <svg class="w-12 h-12 text-slate-400 mx-auto" fill="none" stroke="currentColor"
+                            viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M7 16a4 4 0 01-.88-7.903A5 5 0 1115.9 6L16 6a5 5 0 011 9.9M15 13l-3-3m0 0l-3 3m3-3v12">
+                            </path>
+                        </svg>
+                    </div>
+                    <p class="text-lg font-medium text-slate-700">Drop your XML or CSV file here</p>
+                    <p class="text-sm text-slate-500 mt-2">Supports Android SMS Backup & Restore XML files</p>
+                    <input type="file" id="file-input" class="hidden" accept=".xml,.csv,.txt">
+                </div>
+            </section>
+
+            <!-- Step 2: Processing Status (Hidden by default) -->
+            <section id="status-section" class="hidden bg-white rounded-xl shadow-md p-6">
+                <div class="flex items-center justify-between mb-4">
+                    <h3 class="font-semibold text-lg text-slate-800">Processing Status</h3>
+                    <span id="status-percent" class="text-sm font-bold text-indigo-600">0%</span>
+                </div>
+                <div class="w-full bg-slate-200 rounded-full h-2.5 mb-6">
+                    <div id="progress-bar" class="bg-indigo-600 h-2.5 rounded-full" style="width: 0%"></div>
+                </div>
+
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-4 text-center">
+                    <div class="p-4 bg-slate-50 rounded-lg">
+                        <div id="stat-total" class="text-2xl font-bold text-slate-800">0</div>
+                        <div class="text-xs text-slate-500 uppercase tracking-wide mt-1">Total SMS</div>
+                    </div>
+                    <div class="p-4 bg-emerald-50 rounded-lg">
+                        <div id="stat-whitelisted" class="text-2xl font-bold text-emerald-600">0</div>
+                        <div class="text-xs text-emerald-600 uppercase tracking-wide mt-1">Whitelisted</div>
+                    </div>
+                    <div class="p-4 bg-blue-50 rounded-lg">
+                        <div id="stat-kept" class="text-2xl font-bold text-blue-600">0</div>
+                        <div class="text-xs text-blue-600 uppercase tracking-wide mt-1">Kept (Diverse)</div>
+                    </div>
+                    <div class="p-4 bg-amber-50 rounded-lg">
+                        <div id="stat-anonymized" class="text-2xl font-bold text-amber-600">0</div>
+                        <div class="text-xs text-amber-600 uppercase tracking-wide mt-1">PII Removed</div>
+                    </div>
+                </div>
+            </section>
+
+            <!-- Step 3: Preview & Export (Hidden by default) -->
+            <section id="preview-section" class="hidden bg-white rounded-xl shadow-md p-8">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center justify-between">
+                    <div class="flex items-center">
+                        <span
+                            class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
+                        Review & Export
+                    </div>
+                    <button id="export-btn"
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center">
+                        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+                        </svg>
+                        Download JSON
+                    </button>
+                </h2>
+
+                <div class="mb-6 bg-amber-50 border-l-4 border-amber-500 p-4">
+                    <div class="flex">
+                        <div class="flex-shrink-0">
+                            <svg class="h-5 w-5 text-amber-500" viewBox="0 0 20 20" fill="currentColor">
+                                <path fill-rule="evenodd"
+                                    d="M8.257 3.099c.765-1.36 2.722-1.36 3.486 0l5.58 9.92c.75 1.334-.213 2.98-1.742 2.98H4.42c-1.53 0-2.493-1.646-1.743-2.98l5.58-9.92zM11 13a1 1 0 11-2 0 1 1 0 012 0zm-1-8a1 1 0 00-1 1v3a1 1 0 002 0V6a1 1 0 00-1-1z"
+                                    clip-rule="evenodd" />
+                            </svg>
+                        </div>
+                        <div class="ml-3">
+                            <p class="text-sm text-amber-700">
+                                Please review the samples below. We've highlighted what was changed.
+                                <span class="font-bold">Original messages are shown for comparison only and will NOT be
+                                    included in the export.</span>
+                            </p>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="preview-container" class="space-y-4 max-h-[600px] overflow-y-auto pr-2 custom-scrollbar">
+                    <!-- Preview items will be injected here -->
+                </div>
+            </section>
+        </main>
+
+        <footer class="mt-12 text-center text-slate-500 text-sm">
+            <p>&copy; 2026 Open Source & Privacy First.</p>
+        </footer>
+    </div>
+
+    <!-- Scripts -->
+    <script type="module" src="js/main.js"></script>
+</body>
+
+</html>
