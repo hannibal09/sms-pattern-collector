@@ -20,20 +20,26 @@ export const ANONYMIZATION_RULES = [
 
     {
         name: 'Amount',
-        // Matches: Rs. 1,234.50, INR 500, etc.
+        // Matches: Rs. 1,234.50, INR 500 etc. with improved regex to capture full number including commas
         pattern: /(?:Rs\.?|INR|₹)\s*[\d,]+\.?\d*/gi,
         replace: (match) => {
-            // Remove commas to parse correctly
+            // Remove non-numeric characters except dot
+            // Note: This naive approach fails if there are multiple dots or weird formatting
+            // But typical bank SMS is: "Rs. 1,234.50" -> "1234.50"
             const numStr = match.replace(/,/g, '').replace(/[^\d.]/g, '');
-            const val = parseFloat(numStr);
+            let val = parseFloat(numStr);
+
             if (isNaN(val)) return match;
 
-            // Generate amount within +/- 20% of original to keep magnitude realistic
-            // e.g. 100 -> 80 to 120
+            // Ensure positive
+            val = Math.abs(val);
+            if (val === 0) val = 100; // fallback for zero to avoid 0.00 result if random multiplier is small
+
+            // Generate amount within +/- 20% of original
             const randomFactor = 0.8 + Math.random() * 0.4;
             let newVal = (val * randomFactor).toFixed(2);
 
-            // Format with commas for Indian locale if original had them
+            // Re-add commas for display realism if original had them
             if (match.includes(',')) {
                 const parts = newVal.split('.');
                 parts[0] = parts[0].replace(/\B(?=(\d{3})+(?!\d))/g, ",");
