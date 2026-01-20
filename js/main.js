@@ -65,47 +65,54 @@ async function handleFile(file) {
     document.getElementById('stat-total').textContent = rawMessages.length;
     updateProgress(50);
 
-    // 3. Filter Whitelist & Remove Sent Messages
-    const whitelisted = rawMessages.filter(msg => {
-        // Type 1 is received, Type 2 is sent. Only keep received.
-        if (msg.type && msg.type !== '1') return false;
-        return isWhitelistedSender(msg.sender);
-    });
+    try {
+        // 3. Filter Whitelist & Remove Sent Messages
+        const whitelisted = rawMessages.filter(msg => {
+            // Type 1 is received, Type 2 is sent. Only keep received.
+            if (msg.type && msg.type !== '1') return false;
+            return isWhitelistedSender(msg.sender);
+        });
 
-    document.getElementById('stat-whitelisted').textContent = whitelisted.length;
-    updateProgress(60);
+        document.getElementById('stat-whitelisted').textContent = whitelisted.length;
+        updateProgress(60);
 
-    // 4. Categorize
-    whitelisted.forEach(msg => {
-        msg.category = categorizeMessage(msg.body);
-    });
+        // 4. Categorize
+        whitelisted.forEach(msg => {
+            msg.category = categorizeMessage(msg.body);
+        });
 
-    // Filter out OTPs and Unknowns
-    const relevant = whitelisted.filter(msg => msg.category !== 'OTP' && msg.category !== 'UNKNOWN');
+        // Filter out OTPs and Unknowns
+        const relevant = whitelisted.filter(msg => msg.category !== 'OTP' && msg.category !== 'UNKNOWN');
 
-    // 5. Deduplicate (Pick top 5 per sender per category)
-    // We dedup BEFORE anonymization to save performance, using original body
-    // We treat messages as objects here, passing them through
-    const kept = deduplicate(relevant, 5); // 5 max per category
+        // 5. Deduplicate (Pick top 5 per sender per category)
+        // We dedup BEFORE anonymization to save performance, using original body
+        // We treat messages as objects here, passing them through
+        const kept = deduplicate(relevant, 5); // 5 max per category
 
-    document.getElementById('stat-kept').textContent = kept.length;
-    updateProgress(75);
+        document.getElementById('stat-kept').textContent = kept.length;
+        updateProgress(75);
 
-    // 6. Anonymize
-    processedMessages = kept.map(msg => anonymize(msg));
+        // 6. Anonymize
+        processedMessages = kept.map(msg => anonymize(msg));
 
-    const anonymizedCount = processedMessages.filter(m => m.isAnonymized).length;
-    document.getElementById('stat-anonymized').textContent = anonymizedCount;
+        const anonymizedCount = processedMessages.filter(m => m.isAnonymized).length;
+        document.getElementById('stat-anonymized').textContent = anonymizedCount;
 
-    updateProgress(90);
+        updateProgress(90);
 
-    // 7. Render Preview
-    renderPreview(processedMessages);
+        // 7. Render Preview
+        renderPreview(processedMessages);
 
-    updateProgress(100);
-    previewSection.classList.remove('hidden');
-    // Scroll to preview
-    previewSection.scrollIntoView({ behavior: 'smooth' });
+        updateProgress(100);
+        previewSection.classList.remove('hidden');
+        // Scroll to preview
+        previewSection.scrollIntoView({ behavior: 'smooth' });
+    } catch (error) {
+        console.error('Processing Error:', error);
+        alert(`Error processing SMS: ${error.message}\nPlease check console for details.`);
+        progressBar.classList.add('bg-red-500');
+        statusPercent.textContent = 'Error';
+    }
 }
 
 function readFileAsText(file) {
