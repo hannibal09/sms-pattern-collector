@@ -1,7 +1,38 @@
 /**
  * Rules for detecting and replacing Personally Identifiable Information (PII)
  */
+function randomDigits(length) {
+    let out = '';
+    for (let i = 0; i < length; i++) {
+        out += Math.floor(Math.random() * 10);
+    }
+    return out;
+}
 
+function randomAmountFromOriginal(original) {
+    const digitsOnly = original.replace(/\D/g, '');
+    const len = digitsOnly.length;
+
+    if (len <= 2) return '100';
+
+    const min = Math.pow(10, len - 1);
+    const max = Math.pow(10, len) - 1;
+
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function shiftDayMonthKeepYear(dateStr) {
+    const parts = dateStr.split(/[-\/]/);
+    if (parts.length !== 3) return dateStr;
+
+    const year = parts[2];
+
+    const day = String(Math.floor(Math.random() * 28) + 1).padStart(2, '0');
+    const month = String(Math.floor(Math.random() * 12) + 1).padStart(2, '0');
+
+    const sep = dateStr.includes('/') ? '/' : '-';
+    return `${day}${sep}${month}${sep}${year}`;
+}
 export const ANONYMIZATION_RULES = [
     {
         name: 'Account Number',
@@ -36,8 +67,19 @@ export const ANONYMIZATION_RULES = [
             if (val === 0) val = 100; // fallback for zero to avoid 0.00 result if random multiplier is small
 
             // Generate amount within +/- 20% of original
-            const randomFactor = 0.8 + Math.random() * 0.4;
-            let newVal = (val * randomFactor).toFixed(2);
+            {
+    name: 'Amount',
+    pattern: /(?:Rs\.?|INR|₹)\s*[\d,]+\.?\d*/gi,
+    replace: (match) => {
+        const numeric = match.replace(/,/g, '').replace(/[^\d]/g, '');
+        if (!numeric) return match;
+
+        const newAmount = randomAmountFromOriginal(numeric);
+
+        const symbol = match.match(/Rs\.?|INR|₹/i)?.[0] || 'Rs.';
+        return `${symbol} ${newAmount}`;
+    }
+}
 
             // Re-add commas for display realism if original had them
             if (match.includes(',')) {
