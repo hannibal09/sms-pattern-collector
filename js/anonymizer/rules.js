@@ -10,16 +10,26 @@ function randomDigits(length) {
     return out;
 }
 
-function randomAmountFromOriginal(original) {
-    const digitsOnly = original.replace(/\D/g, '');
-    const len = digitsOnly.length;
+function randomizePreservingFormat(original) {
+    let firstNonZeroSeen = false;
+    return original.split('').map(char => {
+        if (!/\d/.test(char)) return char; // Keep format chars
 
-    if (len <= 2) return '100';
+        // If we haven't seen a non-zero digit yet
+        if (!firstNonZeroSeen) {
+            if (char === '0') {
+                // Leading zero (e.g. 0.50). Keep it 0 to preserve magnitude < 1
+                return '0';
+            } else {
+                // First non-zero digit. Randomize 1-9 to preserve magnitude >= 1
+                firstNonZeroSeen = true;
+                return Math.floor(1 + Math.random() * 9).toString();
+            }
+        }
 
-    const min = Math.pow(10, len - 1);
-    const max = Math.pow(10, len) - 1;
-
-    return Math.floor(Math.random() * (max - min + 1)) + min;
+        // Subsequent digits can be 0-9
+        return Math.floor(Math.random() * 10).toString();
+    }).join('');
 }
 
 function shiftDayMonthKeepYear(dateStr) {
@@ -52,13 +62,15 @@ export const ANONYMIZATION_RULES = [
         name: 'Amount',
         pattern: /(?:Rs\.?|INR|₹)\s*[\d,]+\.?\d*/gi,
         replace: (match) => {
-            const numeric = match.replace(/,/g, '').replace(/[^\d]/g, '');
-            if (!numeric) return match;
+            // Capture the number part including commas/dots
+            const numberMatch = match.match(/[\d,]+\.?\d*/);
+            if (!numberMatch) return match;
 
-            const newAmount = randomAmountFromOriginal(numeric);
-            const symbol = match.match(/Rs\.?|INR|₹/i)?.[0] || 'Rs.';
+            const originalNumber = numberMatch[0];
+            const newNumber = randomizePreservingFormat(originalNumber);
 
-            return `${symbol} ${newAmount}`;
+            // Replace only the number part in the original string (keeping currency symbol)
+            return match.replace(originalNumber, newNumber);
         }
     },
 
