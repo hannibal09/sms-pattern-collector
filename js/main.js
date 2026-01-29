@@ -47,6 +47,11 @@ async function handleFile(file) {
     // UI Reset
     previewContainer.innerHTML = '';
     statusSection.classList.remove('hidden');
+
+    // Hide instructions to focus on results
+    const instructions = document.getElementById('instructions-section');
+    if (instructions) instructions.style.display = 'none';
+
     updateProgress(10);
 
     // 1. Read File
