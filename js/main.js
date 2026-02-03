@@ -215,7 +215,7 @@ function exportData() {
             sender: m.sender,
             body: m.body, // Only the anonymized body!
             category: m.category,
-            timestamp: m.timestamp
+            timestamp: m.timestamp && typeof m.timestamp === 'number' ? new Date(m.timestamp).toISOString() : m.timestamp
         }))
     };
 
