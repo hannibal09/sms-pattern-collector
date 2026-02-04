@@ -14,9 +14,13 @@ const progressBar = document.getElementById('progress-bar');
 const statusPercent = document.getElementById('status-percent');
 const previewContainer = document.getElementById('preview-container');
 const exportBtn = document.getElementById('export-btn');
+const optExportAll = document.getElementById('opt-export-all');
+const optAnonymize = document.getElementById('opt-anonymize');
 
 // State
-let processedMessages = [];
+let rawRelevantMessages = []; // All Whitelisted + Categorized (No Deduplication)
+let rawDiverseMessages = [];  // Deduplicated (Top 5)
+let processedPreviewMessages = []; // Anonymized version of diverse messages (for UI)
 
 // Event Listeners
 dropzone.addEventListener('click', () => fileInput.click());
@@ -87,26 +91,27 @@ async function handleFile(file) {
         });
 
         // Filter out OTPs and Unknowns
-        const relevant = whitelisted.filter(msg => msg.category !== 'OTP' && msg.category !== 'UNKNOWN');
+        // Store in Global State
+        rawRelevantMessages = whitelisted.filter(msg => msg.category !== 'OTP' && msg.category !== 'UNKNOWN');
 
         // 5. Deduplicate (Pick top 5 per sender per category)
-        // We dedup BEFORE anonymization to save performance, using original body
-        // We treat messages as objects here, passing them through
-        const kept = deduplicate(relevant, 5); // 5 max per category
+        // Store in Global State
+        rawDiverseMessages = deduplicate(rawRelevantMessages, 5); // 5 max per category
 
-        document.getElementById('stat-kept').textContent = kept.length;
+        document.getElementById('stat-kept').textContent = rawDiverseMessages.length;
         updateProgress(75);
 
-        // 6. Anonymize
-        processedMessages = kept.map(msg => anonymize(msg));
+        // 6. Anonymize (Only for Preview / Initial Stats)
+        // We always show anonymized stats by default to encourage privacy
+        processedPreviewMessages = rawDiverseMessages.map(msg => anonymize(msg));
 
-        const anonymizedCount = processedMessages.filter(m => m.isAnonymized).length;
+        const anonymizedCount = processedPreviewMessages.filter(m => m.isAnonymized).length;
         document.getElementById('stat-anonymized').textContent = anonymizedCount;
 
         updateProgress(90);
 
         // 7. Render Preview
-        renderPreview(processedMessages);
+        renderPreview(processedPreviewMessages);
 
         updateProgress(100);
         previewSection.classList.remove('hidden');
@@ -178,10 +183,12 @@ function renderPreview(messages) {
     // Attach window scope function for the inline onclick handler
     // In a real app we'd use event delegation
     window.removeMessage = (index) => {
-        // Not implemented in this simple script for the array splicing 
-        // to avoid complexity with re-rendering entire list. 
-        // For prototype, we just remove the visual element and mark as deleted.
-        messages[index].deleted = true;
+        // We mark it deleted in the PREVIEW set
+        // Note: This won't perfectly sync with the 'All Whitelist' export if we export that.
+        // But deleting from 'All Whitelist' is hard via UI (thousands of rows).
+        // So deletion primarily affects the "Diverse Sample".
+        processedPreviewMessages[index].deleted = true;
+
         const button = event.currentTarget;
         const card = button.closest('div.bg-white');
         card.style.opacity = '0.5';
@@ -201,26 +208,78 @@ function highlightDiff(original, modified, mode) {
     return mode === 'orig' ? original : modified;
 }
 
-function exportData() {
-    const validMessages = processedMessages.filter(m => !m.deleted);
+async function exportData() {
+    exportBtn.disabled = true;
+    exportBtn.innerText = 'Processing...';
+
+    // 1. Determine Source
+    const exportAll = optExportAll.checked;
+    const doAnonymize = optAnonymize.checked;
+
+    let sourceMessages = [];
+
+    if (exportAll) {
+        // Use all relevant messages
+        sourceMessages = rawRelevantMessages;
+    } else {
+        // Use diverse sample
+        // Filter out those deleted in UI
+        // Note: We need to map back from processedPreviewMessages to find which indices were deleted
+        // Or simpler: processedPreviewMessages IS the diverse set, just transformed.
+        // We should check the deleted flag on processedPreviewMessages
+        // And if we need raw bodies, we go back to rawDiverseMessages matching index.
+
+        sourceMessages = rawDiverseMessages.filter((msg, idx) => {
+            return !processedPreviewMessages[idx].deleted;
+        });
+    }
+
+    // 2. Process (Anonymize if needed)
+    // If output is diverse sample AND anonymize is ON, we already have them in processedPreviewMessages!
+    // But processedPreviewMessages has the HTML highlights. We want clean data.
+    // Ideally we re-run anonymize to be safe or use the result object.
+
+    // Let's just re-run map to be consistent for both All/Diverse paths.
+    // This might take a second for 50k messages but JS is fast enough.
+
+    const finalExport = sourceMessages.map(msg => {
+        if (doAnonymize) {
+            const result = anonymize(msg);
+            return {
+                sender: result.sender,
+                body: result.body,
+                category: result.category,
+                timestamp: result.timestamp
+            };
+        } else {
+            return {
+                sender: msg.sender,
+                body: msg.body, // RAW
+                category: msg.category,
+                timestamp: msg.timestamp
+            };
+        }
+    });
 
     const exportPayload = {
         metadata: {
             generatedAt: new Date().toISOString(),
-            totalSamples: validMessages.length,
-            version: '1.0.0',
-            source: 'SMS Pattern Collector'
+            totalSamples: finalExport.length,
+            version: '1.2.0',
+            source: 'SMS Pattern Collector',
+            mode: exportAll ? 'FULL_WHITELIST' : 'DIVERSE_SAMPLE',
+            anonymized: doAnonymize
         },
-        samples: validMessages.map(m => ({
-            sender: m.sender,
-            body: m.body, // Only the anonymized body!
-            category: m.category,
+        samples: finalExport.map(m => ({
+            ...m,
             timestamp: m.timestamp && typeof m.timestamp === 'number' ? new Date(m.timestamp).toISOString() : m.timestamp
         }))
     };
 
     const maxDate = new Date().toISOString().split('T')[0];
-    const fileName = `sms_samples_${maxDate}.json`;
+    const typeStr = exportAll ? 'FULL' : 'SAMPLE';
+    const privacyStr = doAnonymize ? 'SAFE' : 'RAW-UNSAFE';
+    const fileName = `sms_${typeStr}_${privacyStr}_${maxDate}.json`;
 
     const blob = new Blob([JSON.stringify(exportPayload, null, 2)], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
@@ -231,4 +290,12 @@ function exportData() {
     document.body.appendChild(a);
     a.click();
     document.body.removeChild(a);
+
+    exportBtn.disabled = false;
+    exportBtn.innerHTML = `
+        <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
+        </svg>
+        Download JSON`;
 }

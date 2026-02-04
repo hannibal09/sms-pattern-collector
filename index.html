@@ -30,26 +30,34 @@
                 <div class="grid md:grid-cols-3 gap-6">
                     <div class="relative">
                         <div class="flex items-center mb-2">
-                            <span class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">1</span>
+                            <span
+                                class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">1</span>
                             <h3 class="font-medium text-blue-900">Install App</h3>
                         </div>
-                        <p class="text-sm text-slate-600 mb-2">Download <a href="https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore" target="_blank" class="text-blue-600 underline hover:text-blue-800">SMS Backup & Restore</a> from Play Store.</p>
+                        <p class="text-sm text-slate-600 mb-2">Download <a
+                                href="https://play.google.com/store/apps/details?id=com.riteshsahu.SMSBackupRestore"
+                                target="_blank" class="text-blue-600 underline hover:text-blue-800">SMS Backup &
+                                Restore</a> from Play Store.</p>
                     </div>
 
                     <div class="relative">
                         <div class="flex items-center mb-2">
-                            <span class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">2</span>
+                            <span
+                                class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">2</span>
                             <h3 class="font-medium text-blue-900">Backup SMS</h3>
                         </div>
-                        <p class="text-sm text-slate-600">Open App → BACKUP → Select "Messages" only → "Local Backup" → BACK UP NOW.</p>
+                        <p class="text-sm text-slate-600">Open App → BACKUP → Select "Messages" only → "Local Backup" →
+                            BACK UP NOW.</p>
                     </div>
 
                     <div class="relative">
                         <div class="flex items-center mb-2">
-                            <span class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">3</span>
+                            <span
+                                class="bg-blue-200 text-blue-800 w-6 h-6 rounded-full flex items-center justify-center text-xs font-bold mr-2">3</span>
                             <h3 class="font-medium text-blue-900">Upload Here</h3>
                         </div>
-                        <p class="text-sm text-slate-600">Locate the XML file in your phone storage and upload it below.</p>
+                        <p class="text-sm text-slate-600">Locate the XML file in your phone storage and upload it below.
+                        </p>
                     </div>
                 </div>
             </section>
@@ -110,14 +118,29 @@
 
             <!-- Step 3: Preview & Export (Hidden by default) -->
             <section id="preview-section" class="hidden bg-white rounded-xl shadow-md p-8">
-                <h2 class="text-2xl font-semibold mb-6 flex items-center justify-between">
+                <h2 class="text-2xl font-semibold mb-6 flex items-center justify-between flex-wrap gap-4">
                     <div class="flex items-center">
                         <span
                             class="bg-indigo-100 text-indigo-700 w-8 h-8 rounded-full flex items-center justify-center text-sm mr-3">2</span>
                         Review & Export
                     </div>
+
+                    <div class="flex items-center space-x-4 bg-slate-50 p-2 rounded-lg border border-slate-200">
+                        <label class="flex items-center space-x-2 cursor-pointer select-none text-sm text-slate-700">
+                            <input type="checkbox" id="opt-export-all"
+                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500">
+                            <span>Export All (Whitelist)</span>
+                        </label>
+                        <div class="h-4 w-px bg-slate-300"></div>
+                        <label class="flex items-center space-x-2 cursor-pointer select-none text-sm text-slate-700">
+                            <input type="checkbox" id="opt-anonymize"
+                                class="rounded border-slate-300 text-indigo-600 focus:ring-indigo-500" checked>
+                            <span>Anonymize</span>
+                        </label>
+                    </div>
+
                     <button id="export-btn"
-                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center">
+                        class="bg-indigo-600 hover:bg-indigo-700 text-white px-6 py-2 rounded-lg font-medium transition-colors flex items-center shadow-sm">
                         <svg class="w-5 h-5 mr-2" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
                                 d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4"></path>
@@ -152,7 +175,8 @@
         </main>
 
         <footer class="mt-12 text-center text-slate-500 text-sm">
-            <p>&copy; 2026 Open Source & Privacy First. <span class="ml-2 px-2 py-0.5 bg-slate-200 rounded text-xs">v1.2</span></p>
+            <p>&copy; 2026 Open Source & Privacy First. <span
+                    class="ml-2 px-2 py-0.5 bg-slate-200 rounded text-xs">v1.2</span></p>
         </footer>
     </div>
 
