@@ -90,9 +90,9 @@ async function handleFile(file) {
             msg.category = categorizeMessage(msg.body);
         });
 
-        // Filter out OTPs and Unknowns
+        // Filter out Unknowns (Allow OTPs now)
         // Store in Global State
-        rawRelevantMessages = whitelisted.filter(msg => msg.category !== 'OTP' && msg.category !== 'UNKNOWN');
+        rawRelevantMessages = whitelisted.filter(msg => msg.category !== 'UNKNOWN');
 
         // 5. Deduplicate (Pick top 5 per sender per category)
         // Store in Global State
